@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect("mongodb+srv://amigacosmica:s5QWf1rCF1H9xrwO@cluster0.ncf8san.mongodb.net/?appName=Cluster0")
+mongoose.connect(process.env.MONGO_URI)
 .then(() => {
     console.log("MongoDB Connected");
 })
