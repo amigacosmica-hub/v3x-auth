@@ -24,46 +24,30 @@ const LicenseSchema = new mongoose.Schema({
 const License = mongoose.model("License", LicenseSchema);
 
 app.post("/validate", async (req, res) => {
+    try {
+        const { license, hwid } = req.body;
 
-    const { license, hwid } = req.body;
+        const key = await License.findOne({ license });
 
-    const key = await License.findOne({ license });
+        if (!key)
+            return res.json({ success: false });
 
-    if (!key)
-    {
-        return res.json({
-            success: false,
-            message: "Invalid license"
-        });
+        if (key.banned)
+            return res.json({ success: false });
+
+        if (key.hwid === "") {
+            key.hwid = hwid;
+            await key.save();
+        }
+
+        if (key.hwid !== hwid)
+            return res.json({ success: false });
+
+        return res.json({ success: true });
+
+    } catch {
+        return res.json({ success: false });
     }
-
-    if (key.banned)
-    {
-        return res.json({
-            success: false,
-            message: "License banned"
-        });
-    }
-
-    if (!key.hwid)
-    {
-        key.hwid = hwid;
-        await key.save();
-    }
-
-    if (key.hwid !== hwid)
-    {
-        return res.json({
-            success: false,
-            message: "HWID mismatch"
-        });
-    }
-
-    return res.json({
-        success: true,
-        message: "License valid"
-    });
-
 });
 
 app.post("/create-license", async (req, res) => {
